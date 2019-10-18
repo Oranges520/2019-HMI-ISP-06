@@ -6,13 +6,17 @@ import os
 from keras.models import load_model
 import tensorflow as tf
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+#os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+ 
+# os.environ["TF_CPP_MIN_LOG_LEVEL"]='1' # 这是默认的显示等级，显示所有信息  
+os.environ["TF_CPP_MIN_LOG_LEVEL"]='2' # 只显示 warning 和 Error   
+# os.environ["TF_CPP_MIN_LOG_LEVEL"]='3' # 只显示 Error
 
 # initialize the video stream and allow the camera sensor to warm up
 print('[INFO] camera sensor warming up...')
 cap=cv2.VideoCapture(0)
 time.sleep(2.0)
-
+'''
 def loadmodel():
     print('start loading model')
     global model
@@ -24,22 +28,42 @@ def loadmodel():
         print('it doesnt')
     global graph
     graph = tf.get_default_graph()
-
-loadmodel()
-
+'''
+# loadmodel()
+model = load_model("finger_detection_model.h5")
 while (True):
     success,img_read=cap.read(0)
+    #img_read=cv2.imread("0.png")
+    #cv2.imshow("img",img_read)
     img_gray=cv2.cvtColor(img_read,cv2.COLOR_BGR2GRAY)
     img_gray = cv2.resize(img_gray, (128, 128))
-
+    
+    
     predict_mat = []
     predict_mat.append(img_gray)
     predict_mat = np.array(predict_mat)
     predict_mat = predict_mat.reshape(1, 128, 128, 1)
+    '''
     with graph.as_default():
         preds = model.predict(predict_mat, steps=1)
         predicted_class_indices = np.argmax(preds, axis=1)
         prediction = predicted_class_indices[0]
+    '''
 
-    cv2.putText(img_read, "number: {:d}".format(prediction), (100, 30),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+    
+    preds = model.predict(predict_mat, steps=1)
+    predicted_class_indices = np.argmax(preds, axis=1)
+    prediction = predicted_class_indices[0]
+
+    print(prediction)
+    cv2.putText(img_read, "number: {:d}".format(prediction), (100, 30),cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+    cv2.imshow("img",img_gray)
+
+    k=cv2.waitKey(1)
+    if k==ord("s"):
+        cv2.imwrite("C:\\Users\\lenovo\\Pictures\\2.jpg",gray)
+        cv2.destroyAllWindows()
+        break
+    if k==27:
+        cv2.destroyAllWindows()
+        break
