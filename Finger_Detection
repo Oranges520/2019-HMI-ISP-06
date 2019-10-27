@@ -1,8 +1,9 @@
 import numpy as np
 import cv2
 import imutils
-import time
+import time 
 import os
+import keras
 from keras.models import load_model
 import tensorflow as tf
 
@@ -15,53 +16,62 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"]='2' # 只显示 warning 和 Error
 # initialize the video stream and allow the camera sensor to warm up
 print('[INFO] camera sensor warming up...')
 cap=cv2.VideoCapture(0)
+#cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320) # 分辨率
+#cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 320) # 分辨率
+#cap.set(3,640)
+#cap.set(4,640)
 time.sleep(2.0)
-'''
-def loadmodel():
-    print('start loading model')
-    global model
-    model_dir = 'finger_detection_model.h5'
-    if os.path.exists(model_dir):
-        print('yes it is')
-        model = load_model(model_dir)
-    else:
-        print('it doesnt')
-    global graph
-    graph = tf.get_default_graph()
-'''
-# loadmodel()
-model = load_model("finger_detection_model.h5")
+
+#model = load_model("10_26.h5")
+model = load_model("CNN_SENet.h5")
 while (True):
     success,img_read=cap.read(0)
-    #img_read=cv2.imread("0.png")
-    #cv2.imshow("img",img_read)
-    img_gray=cv2.cvtColor(img_read,cv2.COLOR_BGR2GRAY)
-    img_gray = cv2.resize(img_gray, (128, 128))
+    #print(img_read)
+    #img_read=cv2.imread("1.jpg")
+    sp = img_read.shape            #获取图像形状：返回【行数值，列数值】列表
+    sz1 = sp[1]                 #图像的高度（行 范围）
+    sz2 = sp[0]                 #图像的宽度（列 范围）
+    #print("sz1:",sz1)
+    #print("sz2:",sz2)
+    #sz3 = sp[2]                #像素值由【RGB】三原色组成
+            
     
+    a=int(sz1/2-160) # x start
+    b=int(sz1/2+160) # x end
+    c=int(sz2/2-160) # y start
+    d=int(sz2/2+160) # y end
+    cropImg = img_read[c:d,a:b]   #裁剪图像
+
+    cv2.rectangle(img_read, (a,c), (b,d), (0,255,0), 1)
+    #img_RGB=cropImg
+    cv2.imshow("img2",cropImg)
+    #cv2.imshow("img",img_read)
+    img_RGB=cv2.cvtColor(cropImg,cv2.COLOR_BGR2RGB)
+    #
+    #ret, thresh=cv2.threshold(img_gray,127,255,cv2.THRESH_BINARY_INV)
+    img_resize = cv2.resize(img_RGB, (200, 200))
+
+    img_np = np.array(img_resize)
+    img_np = 1.0 * img_np / 255 
+    #img_gray2=cv2.resize(img_gray, (480, 480))
     
     predict_mat = []
-    predict_mat.append(img_gray)
+    predict_mat.append(img_np)
     predict_mat = np.array(predict_mat)
-    predict_mat = predict_mat.reshape(1, 128, 128, 1)
-    '''
-    with graph.as_default():
-        preds = model.predict(predict_mat, steps=1)
-        predicted_class_indices = np.argmax(preds, axis=1)
-        prediction = predicted_class_indices[0]
-    '''
+    predict_mat = predict_mat.reshape(1, 200, 200, 3)
 
-    
+
     preds = model.predict(predict_mat, steps=1)
     predicted_class_indices = np.argmax(preds, axis=1)
     prediction = predicted_class_indices[0]
 
     print(prediction)
     cv2.putText(img_read, "number: {:d}".format(prediction), (100, 30),cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-    cv2.imshow("img",img_gray)
-
+    cv2.imshow("img",img_read)
+    time.sleep(0.1)
     k=cv2.waitKey(1)
     if k==ord("s"):
-        cv2.imwrite("C:\\Users\\lenovo\\Pictures\\2.jpg",gray)
+        cv2.imwrite("C:\\Users\\lenovo\\Pictures\\1_0.jpg",img_binary)
         cv2.destroyAllWindows()
         break
     if k==27:
