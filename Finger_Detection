@@ -6,7 +6,17 @@ import os
 import keras
 from keras.models import load_model
 import tensorflow as tf
-
+import serial
+'''
+0：55 55 05 06 00 01 00
+1：55 55 05 06 01 01 00
+2：55 55 05 06 02 01 00
+3：55 55 05 06 03 01 00
+4：55 55 05 06 04 01 00
+5：55 55 05 06 05 01 00
+'''
+port = serial.Serial('COM7', 9600)
+Uart_buf = bytearray([0x55,0x55,0x05,0x06,0x02,0x01,0x00])
 #os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
  
 # os.environ["TF_CPP_MIN_LOG_LEVEL"]='1' # 这是默认的显示等级，显示所有信息  
@@ -65,10 +75,52 @@ while (True):
     predicted_class_indices = np.argmax(preds, axis=1)
     prediction = predicted_class_indices[0]
 
-    print(prediction)
-    cv2.putText(img_read, "number: {:d}".format(prediction), (100, 30),cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-    cv2.imshow("img",img_read)
-    time.sleep(0.1)
+    if prediction==0 or prediction==10:
+        print(prediction)
+        cv2.putText(img_read, "number: {:d}".format(0), (100, 30),cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+        cv2.imshow("img",img_read)
+        Uart_buf = bytearray([0x55,0x55,0x05,0x06,0x00,0x01,0x00])
+        port.write(Uart_buf)
+        #time.sleep(0.1)
+    elif prediction==1:
+        print(prediction)
+        cv2.putText(img_read, "number: {:d}".format(1), (100, 30),cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+        cv2.imshow("img",img_read)
+        Uart_buf = bytearray([0x55,0x55,0x05,0x06,0x01,0x01,0x00])
+        port.write(Uart_buf)
+        #time.sleep(0.1)
+    elif prediction==3:
+        print(prediction)
+        cv2.putText(img_read, "number: {:d}".format(2), (100, 30),cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+        cv2.imshow("img",img_read)
+        Uart_buf = bytearray([0x55,0x55,0x05,0x06,0x02,0x01,0x00])
+        port.write(Uart_buf)
+        #time.sleep(0.1)
+    elif prediction==4:
+        print(prediction)
+        cv2.putText(img_read, "number: {:d}".format(3), (100, 30),cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+        cv2.imshow("img",img_read)
+        Uart_buf = bytearray([0x55,0x55,0x05,0x06,0x03,0x01,0x00])
+        port.write(Uart_buf)
+        #time.sleep(0.1)
+    elif prediction==5:
+        print(prediction)
+        cv2.putText(img_read, "number: {:d}".format(4), (100, 30),cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+        cv2.imshow("img",img_read)
+        Uart_buf = bytearray([0x55,0x55,0x05,0x06,0x04,0x01,0x00])
+        port.write(Uart_buf)
+        #time.sleep(0.1)
+    elif prediction==6:
+        print(prediction)
+        cv2.putText(img_read, "number: {:d}".format(5), (100, 30),cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+        cv2.imshow("img",img_read)
+        Uart_buf = bytearray([0x55,0x55,0x05,0x06,0x05,0x01,0x00])
+        port.write(Uart_buf)
+        #time.sleep(0.1)
+    else:
+        print(prediction)
+        cv2.imshow("img",img_read)
+        #time.sleep(0.1)
     k=cv2.waitKey(1)
     if k==ord("s"):
         cv2.imwrite("C:\\Users\\lenovo\\Pictures\\1_0.jpg",img_binary)
